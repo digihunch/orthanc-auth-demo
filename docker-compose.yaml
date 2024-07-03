@@ -1,0 +1,68 @@
+services:
+  postgres-db-orthanc:
+    image: postgres
+    container_name: postgresdborthanc
+    restart: always
+    shm_size: 128mb
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/pgdata-orthanc:/var/lib/postgresql/data
+    networks:
+      - orthnet 
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin123
+      - POSTGRES_DB=orthancdb
+
+  orthanc-backend:
+    image: $DOCKER_IMAGE_ORTHANC
+    container_name: orthancbackend
+    command: /run/secrets/    # Path to the configuration files (stored as secrets)
+    env_file:
+      - .orthanc.env
+    secrets:
+      - orthanc.json
+      - site.pem
+      - serversidescript.lua
+    restart: always
+    volumes:
+      - ./OrthancStorage:/run/secrets/OrthancStorage
+    networks:
+      - orthnet
+    healthcheck:
+      disable: true  # Healthcheck is driven by Envoy, see envoy.yaml for healthcheck configuration
+    depends_on:
+      - postgres-db-orthanc
+
+  envoy-proxy:
+    image: $DOCKER_IMAGE_ENVOY 
+    container_name: envoy
+    ports:
+      - 9901:9901
+      - 443:443
+      - 11112:11112
+    command:
+      - "-c"
+      - "/etc/envoy/envoy.yaml"
+      - "--log-level"
+      - "info"
+      - "--component-log-level"
+      - "upstream:info,http:debug"
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+      - ./$SITE_KEY_CERT_FILE:/etc/ssl/certs/site.pem
+      - ./envoy:/home/envoy
+    networks:
+      - orthnet
+secrets:
+  orthanc.json:
+    file: $ORTHANC_CONFIG_FILE
+  site.pem:
+    file: $SITE_KEY_CERT_FILE
+  serversidescript.lua:
+    file: $SERVER_SCRIPT_FILE
+networks:
+  orthnet:
+    driver: bridge
+    enable_ipv6: false

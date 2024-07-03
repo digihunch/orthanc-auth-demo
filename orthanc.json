@@ -1,0 +1,44 @@
+{
+  "Name" : "Orthanc in Docker",
+  "RemoteAccessAllowed" : true,
+  "SslEnabled" : true,
+  "AuthenticationEnabled" : true,
+  "RegisteredUsers" : {
+    "admin" : "orthanc"
+  },
+  "DicomServerEnabled" : true,
+  "DicomAet": "ORTHANC",
+  "HttpsCACertificates": "/etc/ssl/certs/ca-certificates.crt",
+  "SslCertificate" : "site.pem",
+  "StableAge" : 60,
+  "DicomAssociationCloseDelay" : 5,
+  "LuaScripts" : [
+    "serversidescript.lua"
+  ],
+  "PostgreSQL" : {
+    "EnableIndex" : true,
+    "EnableStorage" : false,
+    "Host" : "${DB_ADDR}",
+    "Port" : 5432,
+    "Database" : "orthancdb",
+    "Username" : "${DB_USERNAME}",
+    "Password" : "${DB_PASSWORD}",
+    "EnableSsl" : false,
+    "Lock" : false
+  },
+  "OrthancExplorer2" : {
+    "Enable": true,
+    "IsDefaultOrthancUI": true,
+    "Root" : "/ui/",
+    "Theme": "light"
+  },
+  "Authorization" : {
+    "CheckedLevel": "studies"
+  },
+  "Plugins" : [
+    "/usr/share/orthanc/plugins-available/libOrthancPostgreSQLIndex.so",
+    "/usr/share/orthanc/plugins-available/libOrthancWebViewer.so",
+    "/usr/share/orthanc/plugins-available/libOrthancExplorer2.so",
+    "/usr/share/orthanc/plugins-available/libOrthancAuthorization.so"
+  ]
+}
