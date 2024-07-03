@@ -4,6 +4,8 @@ services:
     container_name: postgresdborthanc
     restart: always
     shm_size: 128mb
+    env_file:
+      - .orthanc.env
     ports:
       - 5432:5432
     volumes:
@@ -11,9 +13,9 @@ services:
     networks:
       - orthnet 
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin123
-      - POSTGRES_DB=orthancdb
+      - POSTGRES_USER=$DB_USERNAME
+      - POSTGRES_PASSWORD=$DB_PASSWORD
+      - POSTGRES_DB=orthancdb  # must match orthanc.json
 
   orthanc-backend:
     image: $DOCKER_IMAGE_ORTHANC
