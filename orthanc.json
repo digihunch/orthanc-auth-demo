@@ -20,7 +20,7 @@
     "EnableStorage" : false,
     "Host" : "${DB_ADDR}",
     "Port" : 5432,
-    "Database" : "orthancdb",
+    "Database" : "${DB_NAME}",
     "Username" : "${DB_USERNAME}",
     "Password" : "${DB_PASSWORD}",
     "EnableSsl" : false,
@@ -37,8 +37,9 @@
   },
   "Plugins" : [
     "/usr/share/orthanc/plugins-available/libOrthancPostgreSQLIndex.so",
-    "/usr/share/orthanc/plugins-available/libOrthancWebViewer.so",
     "/usr/share/orthanc/plugins-available/libOrthancExplorer2.so",
-    "/usr/share/orthanc/plugins-available/libOrthancAuthorization.so"
+    "/usr/share/orthanc/plugins-available/libOrthancAuthorization.so",
+    "/usr/share/orthanc/plugins-available/libOrthancDicomWeb.so",
+    "/usr/share/orthanc/plugins-available/libStoneWebViewer.so"
   ]
 }

@@ -13,12 +13,19 @@ services:
     environment:
       - POSTGRES_USER=$DB_USERNAME
       - POSTGRES_PASSWORD=$DB_PASSWORD
-      - POSTGRES_DB=orthancdb  # must match orthanc.json
+      - POSTGRES_DB=$DB_NAME  # must match orthanc.json
 
   orthanc-backend:
     image: $DOCKER_IMAGE_ORTHANC
     container_name: orthancbackend
     command: /run/secrets/    # Path to the configuration files (stored as secrets)
+    env_file:
+      - .orthanc.env # variables that are not referenced in orthanc.json can be put in this file
+    environment:    # Variables referenced from orthanc.json and are used in other services, must be passed in this way from .env
+      - DB_USERNAME=$DB_USERNAME
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_NAME=$DB_NAME
+      - DB_ADDR=$DB_ADDR
     secrets:
       - orthanc.json
       - site.pem
