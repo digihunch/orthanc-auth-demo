@@ -1,5 +1,8 @@
 # orthanc-auth-demo
 
+Download the project to 
+
+## Provision Certificate
 ```sh
 cd certs
 
@@ -19,3 +22,12 @@ openssl req -new -newkey rsa:4096 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Dig
 
 openssl x509 -req -sha256 -days 365 -in client.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out client.crt
 ```
+
+## Prepare DICOM images
+
+Send with the following command using dcmtk. 
+```sh
+storescu -aet TESTER -aec ORTHANC -d +tls client.key client.crt -rc +cf ca.crt localhost 11112 IM-0001-0011.dcm
+```
+
+## Launch web viewer
