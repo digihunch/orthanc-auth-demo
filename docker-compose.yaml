@@ -14,6 +14,9 @@ services:
       - POSTGRES_USER=$DB_USERNAME
       - POSTGRES_PASSWORD=$DB_PASSWORD
       - POSTGRES_DB=$DB_NAME  # must match orthanc.json
+    profiles:
+      - nginx-proxy 
+      - envoy-proxy
 
   orthanc-backend:
     image: $DOCKER_IMAGE_ORTHANC
@@ -39,6 +42,30 @@ services:
       disable: true  # Healthcheck is driven by Envoy, see envoy.yaml for healthcheck configuration
     depends_on:
       - postgres-db-orthanc
+    profiles:
+      - nginx-proxy 
+      - envoy-proxy
+  nginx-proxy:
+    image: $DOCKER_IMAGE_NGINX
+    container_name: nginx
+    ports:
+      - 443:443
+      - 11112:11112
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./$SITE_KEY_CERT_FILE:/etc/nginx/conf.d/site.pem
+    networks:
+      - orthnet
+    depends_on:
+      - orthanc-backend 
+    profiles:
+      - nginx-proxy 
 
   envoy-proxy:
     image: $DOCKER_IMAGE_ENVOY 
@@ -60,6 +87,11 @@ services:
       - ./envoy:/home/envoy
     networks:
       - orthnet
+    depends_on:
+      - orthanc-backend 
+    profiles:
+      - envoy-proxy
+
 secrets:
   orthanc.json:
     file: $ORTHANC_CONFIG_FILE
