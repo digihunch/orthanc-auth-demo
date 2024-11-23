@@ -1,19 +1,34 @@
 services:
   postgres-db-orthanc:
-    image: postgres
+    image: postgres:16
     container_name: postgresdborthanc
     restart: always
     shm_size: 128mb
-    ports:
-      - 5432:5432
     volumes:
       - ./data/pgdata-orthanc:/var/lib/postgresql/data
     networks:
       - orthnet 
     environment:
-      - POSTGRES_USER=$DB_USERNAME
-      - POSTGRES_PASSWORD=$DB_PASSWORD
-      - POSTGRES_DB=$DB_NAME  # must match orthanc.json
+      - POSTGRES_USER=$ORTHANC_DB_USERNAME
+      - POSTGRES_PASSWORD=$ORTHANC_DB_PASSWORD
+      - POSTGRES_DB=$ORTHANC_DB_NAME  # value must match orthanc.json
+    profiles:
+      - nginx-proxy 
+      - envoy-proxy
+
+  postgres-db-keycloak:
+    image: postgres:16
+    container_name: postgresdbkeycloak
+    restart: always
+    shm_size: 128mb
+    volumes:
+      - ./data/pgdata-keycloak:/var/lib/postgresql/data
+    networks:
+      - orthnet 
+    environment:
+      - POSTGRES_USER=$KEYCLOAK_DB_USERNAME
+      - POSTGRES_PASSWORD=$KEYCLOAK_DB_PASSWORD
+      - POSTGRES_DB=$KEYCLOAK_DB_NAME  # value must match keycloak config
     profiles:
       - nginx-proxy 
       - envoy-proxy
@@ -25,10 +40,10 @@ services:
     env_file:
       - .orthanc.env # variables that are not referenced in orthanc.json can be put in this file
     environment:    # Variables referenced from orthanc.json and are used in other services, must be passed in this way from .env
-      - DB_USERNAME=$DB_USERNAME
-      - DB_PASSWORD=$DB_PASSWORD
-      - DB_NAME=$DB_NAME
-      - DB_ADDR=$DB_ADDR
+      - DB_USERNAME=$ORTHANC_DB_USERNAME
+      - DB_PASSWORD=$ORTHANC_DB_PASSWORD
+      - DB_NAME=$ORTHANC_DB_NAME
+      - DB_ADDR=$ORTHANC_DB_ADDR
     secrets:
       - orthanc.json
       - site.pem
@@ -45,6 +60,7 @@ services:
     profiles:
       - nginx-proxy 
       - envoy-proxy
+
   nginx-proxy:
     image: $DOCKER_IMAGE_NGINX
     container_name: nginx
